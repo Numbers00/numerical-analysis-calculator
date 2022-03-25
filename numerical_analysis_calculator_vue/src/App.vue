@@ -41,7 +41,7 @@
   padding: 10px 30px 10px 30px;
 }
 .outline-card {
-  border: 2px solid #cad4dd;
+  border: 2px solid #c3cfd9;
   background-color: #fefffe;
   box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
   transition: 0.3s;
