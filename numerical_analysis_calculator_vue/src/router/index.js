@@ -5,7 +5,8 @@ const routes = [
   {
     path: '/',
     name: 'nonlinear',
-    component: NonlinearView
+    component: NonlinearView,
+    props: true
   }
 ]
 

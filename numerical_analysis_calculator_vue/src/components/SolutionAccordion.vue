@@ -8,7 +8,7 @@
     </h2>
     <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#helperAccordion">
       <div class="accordion-body">
-        Please click "solve" to start displaying the answer
+        {{printAnswer}}
       </div>
     </div>
   </div>
@@ -20,7 +20,10 @@
     </h2>
     <div id="collapseTwo" class="accordion-collapse collapse show" aria-labelledby="headingTwo" data-bs-parent="#helperAccordion">
       <div class="accordion-body">
-        Please click "solve" to start displaying the solution
+        <template v-for="(line, index) in printSolution">
+          <p v-if="line.includes('iteration')" :key="index.uuid" class="lead fw-bold">{{line}}</p>
+          <p v-else :key="index.uuid">{{line}}</p>
+        </template>
       </div>
     </div>
   </div>
@@ -28,8 +31,29 @@
 </template>
 
 <script>
+import { uuid } from 'vue-uuid';
+
 export default {
-  name: 'SolutionAccordion'
+  name: 'SolutionAccordion',
+  props: {
+    solution: Array,
+    answer: String
+  },
+  data () {
+    return {
+      uuid: uuid.v4()
+    }
+  },
+  computed: {
+    printSolution () {
+      if (this.solution.length === 0) return ['Please click "solve" to start displaying the solution'];
+      else return this.solution;
+    },
+    printAnswer () {
+      if (this.answer === '') return 'Please click "solve" to start displaying the answer';
+      else return this.answer;
+    }
+  }
 }
 </script>
 
