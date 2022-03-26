@@ -68,7 +68,7 @@
       </div>
 
       <div class="mt-4 ms-0 ps-0 container-fluid d-inline-flex">
-        w/ Max Iteration &nbsp;
+        w/ Max Iteration&nbsp;
         <input 
           type="number" 
           v-model="maxiter"
@@ -155,19 +155,28 @@ export default {
   },
   methods: {
     handleCalculate () {
+      this.solution = [];
+
+      const func = new Function('x', 'return ' + this.correctedEq);
+
+      if (this.randomBounds) {
+        while (func(this.startingBound) * func(this.endingBound) >= 0) {
+          this.startingBound--;
+          this.endingBound++;
+        }
+      } else {
+        if (func(this.startingBound) * func(this.endingBound) >= 0) {
+          this.solution.push(`f(${this.startingBound}) * f(${this.endingBound}) = ${func(this.startingBound) * func(this.endingBound)} which is greater than or equal to 0, try with different bounds`);
+          this.handleEstimates();
+          return;
+        }
+      }
+
       let xCurr, xPrev = 0;
       let a = this.startingBound;
       let b = this.endingBound;
       xCurr = (a + b) / 2;
 
-      const func = new Function('x', 'return ' + this.correctedEq);
-
-      if (func(a) * func(b) >= 0) {
-        this.solution.push('the two bounds substituted to the function should result in different signs, try with different bounds');
-        return;
-      }
-
-      this.solution = [];
       this.solution.push(`BM(f(x), [a, b], E) -> BM(${this.correctedEq}, [${a}, ${b}], ${this.errorTolerance})`);
       this.solution.push(`xCurr <- (${a} + ${b}) / 2 (iteration 1)`);
       this.solution.push(`repeat until |xCurr - xPrev| < ${this.errorTolerance}`);
@@ -195,6 +204,7 @@ export default {
           this.answer = `${xCurr} is the exact solution`;
           
           this.handleEstimates();
+          return;
         }
 
         this.solution.push(`xCurr <- (${a} + ${b}) / 2`);
@@ -209,6 +219,7 @@ export default {
         this.answer = `the calculation has reached maxiter ${this.maxiter}, ${xCurr} is the final estimate we've reached`;
         
         this.handleEstimates();
+        return;
       }
 
       xCurr = parseFloat(xCurr.toFixed(this.correctDigits));
@@ -222,6 +233,10 @@ export default {
     }
   },
   watch: {
+    randomBounds () {
+      document.getElementById('startingBound').disabled = this.randomBounds;
+      document.getElementById('endingBound').disabled = this.randomBounds;
+    },
     maxiter () {
       if (this.maxiter < 1) this.maxiter = 1;
       else if (this.maxiter > 500) this.maxiter = 500; 
