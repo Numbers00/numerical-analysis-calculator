@@ -21,7 +21,13 @@
     <div id="collapseTwo" class="accordion-collapse collapse show" aria-labelledby="headingTwo" data-bs-parent="#helperAccordion">
       <div class="accordion-body">
         <template v-for="(line, index) in printSolution">
-          <p v-if="line.includes('iteration')" :key="index.uuid" class="lead fw-bold">{{line}}</p>
+          <p 
+            v-if="line.includes('iter') || (!line.includes('Please') && index === printSolution.length - 1)" 
+            :key="index.uuid" 
+            class="lead fw-bold"
+          >
+          {{line}}
+          </p>
           <p v-else :key="index.uuid">{{line}}</p>
         </template>
       </div>
