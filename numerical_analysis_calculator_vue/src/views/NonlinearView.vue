@@ -10,17 +10,6 @@
     <bisection-method 
       @handle-estimates="handleEstimates"
     />
-    <p class="text-start mt-4">
-      Lorem ipsum dolor, sit amet consectetur adipisicing elit. Provident 
-      architecto ducimus tenetur ut saepe aperiam accusamus, quos sit. 
-      Laboriosam tempora veritatis a aut id fugiat facere, quae vel cumque 
-      molestias cupiditate suscipit alias tempore iusto omnis reprehenderit 
-      sint magnam quasi consequuntur adipisci, praesentium laudantium 
-      perspiciatis error repellat! Modi nemo quaerat, iusto ipsa ea sequi 
-      culpa et necessitatibus provident unde itaque nulla voluptatem eaque 
-      fugit facere deleniti libero dolor. Quo maxime, tenetur fuga nulla 
-      aperiam fugiat. Ut ducimus reprehenderit fugit enim!
-    </p>
   </div>
 </div>
 </template>
