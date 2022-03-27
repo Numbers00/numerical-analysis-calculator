@@ -88,7 +88,7 @@
           id="correctDigits"
           required
         >
-        &nbsp;Decimal Places
+        &nbsp;Digits
       </div>
 
       <div class="mt-3 mb-3 row d-flex justify-content-around">
@@ -103,12 +103,13 @@
       </div>
     </div>
     <p class="text-start mt-4">
-      Bisection Method: BM(f(x), [a,b], E)<br>
+      Regula Falsi Method: RF(f(x), [a,b], E)<br>
       <br>
       For: Nonlinear Equations<br>
       Brief Description: Will always converge so long as a root is within the 
       given bounds<br>
-      Comparison with Other Methods: Slower than Regula-Falsi Method but simpler<br>
+      Comparison with Other Methods: Faster on average than Bisection Method but
+      a bit more complex<br>
       <br>
       Legend:<br>
       xCurr = current estimate<br>
@@ -119,7 +120,7 @@
       <br>
       Pseudocode:<br>
       float xCurr, xPrev<br>
-      xCurr = (a + b) / 2 (iteration 1)<br>
+      xCurr = (func(a) * (b-a)) / (func(b) - func(a)) (iteration 1)<br>
       <br>
       repeat<br>
         &emsp;xPrev = xCurr<br>
@@ -128,7 +129,7 @@
         &emsp;else if f(a) * f(xCurr) &gt; 0<br>
           &emsp;&emsp;a = xCurr<br>
         &emsp;else print(xCurr + "is the exact solution")<br>
-        &emsp;xCurr = (a + b) / 2<br>
+        &emsp;xCurr = (func(a) * (b-a)) / (func(b) - func(a))<br>
       until |xCurr - xPrev| &lt; E<br>
     </p>
   </div>
@@ -137,7 +138,7 @@
 <script>
 
 export default {
-  name: 'BisectionMethod',
+  name: 'RegulaFalsiMethod',
   props: {
 
   },
@@ -154,67 +155,15 @@ export default {
     }
   },
   methods: {
-    randomizeBounds () {
-      const func = this.func;
-      let a = 1;
-      let b = 3;
-      const maxiter = 100;
-
-      for (let i = 0; func(a) * func(b) >= 0 && i < maxiter; i++) {
-        a--;
-        b++;
-      }
-
-      if (func(a) * func(b) >= 0) {
-        a = 1;
-        b = 5;
-        for (let i = 0; func(a) * func(b) >= 0 && i < maxiter; i++) {
-          a++;
-          b++;
-        }
-      }
-
-      if (func(a) * func(b) >= 0) {
-        a = -1;
-        b = -5;
-        for (let i = 0; func(a) * func(b) >= 0 && i < maxiter; i++) {
-          a--;
-          b--;
-        }
-      }
-
-      // console.log(func(a), func(b));
-      // func(x) === func(0) at very large numbers: resolved
-      // if (func(a) * func(b) >= 0 || (a !== 0 && func(a) === func(0) && func(0) !== 0) || (b !== 0 && func(b) === func(0) && func(b) !== 0)) throw new Error();
-      if (func(a) * func(b) >= 0) throw new Error();
-
-      let startingRand = a;
-      let endingRand = b;
-      startingRand -= Math.floor(Math.random() * 5);
-      endingRand += Math.floor(Math.random() * 5);
-
-      if (func(startingRand) * func(endingRand) >= 0) {
-        this.startingBound = a;
-        this.endingBound = b;
-      } else {
-        this.startingBound = startingRand;
-        this.endingBound = endingRand;
-      }
-    },
     handleCalculate () {
       this.solution = [];
-      this.answer = '';
 
-      const func = this.func;
+      const func = new Function('x', 'return ' + this.correctedEq);
 
       if (this.randomBounds) {
-        try {
-          this.randomizeBounds();
-        } catch (e) {
-          this.solution.push('Could not find eligible bounds for this equation, but you can try manually inputting random bounds');
-          this.answer = 'Could not find eligible bounds for this equation, but you can try manually inputting random bounds';
-          this.handleEstimates();
-          return;
+        while (func(this.startingBound) * func(this.endingBound) >= 0) {
+          this.startingBound--;
+          this.endingBound++;
         }
       } else {
         if (func(this.startingBound) * func(this.endingBound) >= 0) {
@@ -223,10 +172,11 @@ export default {
           return;
         }
       }
+
       let xCurr, xPrev = 0;
       let a = this.startingBound;
       let b = this.endingBound;
-      xCurr = (a + b) / 2;
+      xCurr = (func(a) * (b-a)) / (func(b) - func(a));
 
       this.solution.push(`BM(f(x), [a, b], E) -> BM(${this.correctedEq}, [${a}, ${b}], ${this.errorTolerance})`);
       this.solution.push(`xCurr <- (${a} + ${b}) / 2 (iteration 1)`);
@@ -259,7 +209,7 @@ export default {
         }
 
         this.solution.push(`xCurr <- (${a} + ${b}) / 2`);
-        xCurr = (a + b) / 2;
+        xCurr = (func(a) * (b-a)) / (func(b) - func(a));
         
         iter++;
       } while (Math.abs(xCurr - xPrev) >= this.errorTolerance && iter < this.maxiter)
@@ -298,9 +248,6 @@ export default {
     }
   },
   computed: {
-    func () {
-      return new Function('x', 'return ' + this.correctedEq);
-    },
     errorTolerance () {
       return 1 / (10 ** this.correctDigits);
     },

@@ -8,6 +8,7 @@
   </div>
   <div class="me-0 pe-0 col-lg-6">
     <bisection-method 
+      v-if="method === 'BisectionMethod'"
       @handle-estimates="handleEstimates"
     />
   </div>
@@ -22,6 +23,7 @@ export default {
   name: 'NonlinearView',
   data () {
     return {
+      method: 'BisectionMethod',
       solution: [],
       answer: ''
     }
