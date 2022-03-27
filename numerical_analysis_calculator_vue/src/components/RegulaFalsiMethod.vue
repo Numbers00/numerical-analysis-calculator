@@ -10,12 +10,13 @@
             id="nonlinearMethod" 
             class="form-select form-select" 
             aria-label=".form-select-sm example"
+            v-model="numMethod"
           >
-            <option value="0" selected>Bisection Method</option>
-            <option value="1">Regula-Falsi Method</option>
-            <option value="2">Newton's Method</option>
-            <option value="3">Secant Method</option>
-            <option value="4">Method of Successive Substitution</option>
+            <option value="bisectionMethod">Bisection Method</option>
+            <option value="regulaFalsiMethod" selected>Regula-Falsi Method</option>
+            <option value="newtonsMethod">Newton's Method</option>
+            <option value="secantMethod">Secant Method</option>
+            <option value="MOSS">Method of Successive Substitution</option>
           </select>
         </div>
 
@@ -88,7 +89,7 @@
           id="correctDigits"
           required
         >
-        &nbsp;Digits
+        &nbsp;Decimal Places
       </div>
 
       <div class="mt-3 mb-3 row d-flex justify-content-around">
@@ -103,13 +104,13 @@
       </div>
     </div>
     <p class="text-start mt-4">
-      Regula Falsi Method: RF(f(x), [a,b], E)<br>
+      Bisection Method: BM(f(x), [a,b], E)<br>
       <br>
       For: Nonlinear Equations<br>
       Brief Description: Will always converge so long as a root is within the 
       given bounds<br>
-      Comparison with Other Methods: Faster on average than Bisection Method but
-      a bit more complex<br>
+      Comparison with Other Methods: Faster on average than Bisection Method 
+      but with a more complex formula<br>
       <br>
       Legend:<br>
       xCurr = current estimate<br>
@@ -120,7 +121,7 @@
       <br>
       Pseudocode:<br>
       float xCurr, xPrev<br>
-      xCurr = (func(a) * (b-a)) / (func(b) - func(a)) (iteration 1)<br>
+      xCurr = a - (func(a) * (b-a))/(func(b) - func(a)) (iteration 1)<br>
       <br>
       repeat<br>
         &emsp;xPrev = xCurr<br>
@@ -129,7 +130,7 @@
         &emsp;else if f(a) * f(xCurr) &gt; 0<br>
           &emsp;&emsp;a = xCurr<br>
         &emsp;else print(xCurr + "is the exact solution")<br>
-        &emsp;xCurr = (func(a) * (b-a)) / (func(b) - func(a))<br>
+        &emsp;xCurr = a - (func(a) * (b-a))/(func(b) - func(a))<br>
       until |xCurr - xPrev| &lt; E<br>
     </p>
   </div>
@@ -138,12 +139,13 @@
 <script>
 
 export default {
-  name: 'RegulaFalsiMethod',
+  name: 'BisectionMethod',
   props: {
 
   },
   data () {
     return {
+      numMethod: 'regulaFalsiMethod',
       equation: '',
       randomBounds: false,
       startingBound: 1,
@@ -155,15 +157,67 @@ export default {
     }
   },
   methods: {
+    randomizeBounds () {
+      const func = this.func;
+      let a = 1;
+      let b = 3;
+      const maxiter = 100;
+
+      for (let i = 0; func(a) * func(b) >= 0 && i < maxiter; i++) {
+        a--;
+        b++;
+      }
+
+      if (func(a) * func(b) >= 0) {
+        a = 1;
+        b = 5;
+        for (let i = 0; func(a) * func(b) >= 0 && i < maxiter; i++) {
+          a++;
+          b++;
+        }
+      }
+
+      if (func(a) * func(b) >= 0) {
+        a = -1;
+        b = -5;
+        for (let i = 0; func(a) * func(b) >= 0 && i < maxiter; i++) {
+          a--;
+          b--;
+        }
+      }
+
+      // console.log(func(a), func(b));
+      // func(x) === func(0) at very large numbers: resolved
+      // if (func(a) * func(b) >= 0 || (a !== 0 && func(a) === func(0) && func(0) !== 0) || (b !== 0 && func(b) === func(0) && func(b) !== 0)) throw new Error();
+      if (func(a) * func(b) >= 0) throw new Error();
+
+      let startingRand = a;
+      let endingRand = b;
+      startingRand -= Math.floor(Math.random() * 5);
+      endingRand += Math.floor(Math.random() * 5);
+
+      if (func(startingRand) * func(endingRand) >= 0) {
+        this.startingBound = a;
+        this.endingBound = b;
+      } else {
+        this.startingBound = startingRand;
+        this.endingBound = endingRand;
+      }
+    },
     handleCalculate () {
       this.solution = [];
+      this.answer = '';
 
-      const func = new Function('x', 'return ' + this.correctedEq);
+      const func = this.func;
 
       if (this.randomBounds) {
-        while (func(this.startingBound) * func(this.endingBound) >= 0) {
-          this.startingBound--;
-          this.endingBound++;
+        try {
+          this.randomizeBounds();
+        } catch (e) {
+          this.solution.push('Could not find eligible bounds for this equation, but you can try manually inputting random bounds');
+          this.answer = 'Could not find eligible bounds for this equation, but you can try manually inputting random bounds';
+          this.handleEstimates();
+          return;
         }
       } else {
         if (func(this.startingBound) * func(this.endingBound) >= 0) {
@@ -172,14 +226,13 @@ export default {
           return;
         }
       }
-
       let xCurr, xPrev = 0;
       let a = this.startingBound;
       let b = this.endingBound;
-      xCurr = (func(a) * (b-a)) / (func(b) - func(a));
+      xCurr = a - (func(a) * (b-a))/(func(b) - func(a));
 
       this.solution.push(`BM(f(x), [a, b], E) -> BM(${this.correctedEq}, [${a}, ${b}], ${this.errorTolerance})`);
-      this.solution.push(`xCurr <- (${a} + ${b}) / 2 (iteration 1)`);
+      this.solution.push(`xCurr <- ${a} - (f(${a}) * (${b}-${a})) / (f(${b}) - f(${a})) (iteration 1)`);
       this.solution.push(`repeat until |xCurr - xPrev| < ${this.errorTolerance}`);
 
       let iter = 2;
@@ -208,13 +261,13 @@ export default {
           return;
         }
 
-        this.solution.push(`xCurr <- (${a} + ${b}) / 2`);
-        xCurr = (func(a) * (b-a)) / (func(b) - func(a));
+        this.solution.push(`xCurr <- ${a} - (f(${a}) * (${b}-${a})) / (f(${b}) - f(${a}))`);
+        xCurr = a - (func(a) * (b-a))/(func(b) - func(a));
         
         iter++;
-      } while (Math.abs(xCurr - xPrev) >= this.errorTolerance && iter < this.maxiter)
+      } while (Math.abs(xCurr - xPrev) >= this.errorTolerance && iter <= this.maxiter)
 
-      if (iter >= this.maxiter) {
+      if (iter > this.maxiter) {
         xCurr = parseFloat(xCurr.toFixed(this.correctDigits));
         this.solution.push(`the calculation has reached maxiter ${this.maxiter}, ${xCurr} is the final estimate we've reached`);
         this.answer = `the calculation has reached maxiter ${this.maxiter}, ${xCurr} is the final estimate we've reached`;
@@ -234,6 +287,9 @@ export default {
     }
   },
   watch: {
+    numMethod () {
+      this.$emit('change-num-method', this.numMethod);
+    },
     randomBounds () {
       document.getElementById('startingBound').disabled = this.randomBounds;
       document.getElementById('endingBound').disabled = this.randomBounds;
@@ -248,6 +304,9 @@ export default {
     }
   },
   computed: {
+    func () {
+      return new Function('x', 'return ' + this.correctedEq);
+    },
     errorTolerance () {
       return 1 / (10 ** this.correctDigits);
     },

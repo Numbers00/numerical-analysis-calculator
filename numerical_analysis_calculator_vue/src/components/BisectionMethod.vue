@@ -10,12 +10,13 @@
             id="nonlinearMethod" 
             class="form-select form-select" 
             aria-label=".form-select-sm example"
+            v-model="numMethod"
           >
-            <option value="0" selected>Bisection Method</option>
-            <option value="1">Regula-Falsi Method</option>
-            <option value="2">Newton's Method</option>
-            <option value="3">Secant Method</option>
-            <option value="4">Method of Successive Substitution</option>
+            <option value="bisectionMethod" selected>Bisection Method</option>
+            <option value="regulaFalsiMethod">Regula-Falsi Method</option>
+            <option value="newtonsMethod">Newton's Method</option>
+            <option value="secantMethod">Secant Method</option>
+            <option value="MOSS">Method of Successive Substitution</option>
           </select>
         </div>
 
@@ -143,6 +144,7 @@ export default {
   },
   data () {
     return {
+      numMethod: 'bisectionMethod',
       equation: '',
       randomBounds: false,
       startingBound: 1,
@@ -262,9 +264,9 @@ export default {
         xCurr = (a + b) / 2;
         
         iter++;
-      } while (Math.abs(xCurr - xPrev) >= this.errorTolerance && iter < this.maxiter)
+      } while (Math.abs(xCurr - xPrev) >= this.errorTolerance && iter <= this.maxiter)
 
-      if (iter >= this.maxiter) {
+      if (iter > this.maxiter) {
         xCurr = parseFloat(xCurr.toFixed(this.correctDigits));
         this.solution.push(`the calculation has reached maxiter ${this.maxiter}, ${xCurr} is the final estimate we've reached`);
         this.answer = `the calculation has reached maxiter ${this.maxiter}, ${xCurr} is the final estimate we've reached`;
@@ -284,6 +286,9 @@ export default {
     }
   },
   watch: {
+    numMethod () {
+      this.$emit('change-num-method', this.numMethod);
+    },
     randomBounds () {
       document.getElementById('startingBound').disabled = this.randomBounds;
       document.getElementById('endingBound').disabled = this.randomBounds;

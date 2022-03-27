@@ -8,7 +8,13 @@
   </div>
   <div class="me-0 pe-0 col-lg-6">
     <bisection-method 
-      v-if="method === 'BisectionMethod'"
+      v-if="numMethod === 'bisectionMethod'"
+      @change-num-method="changeNumMethod"
+      @handle-estimates="handleEstimates"
+    />
+    <regula-falsi-method 
+      v-if="numMethod === 'regulaFalsiMethod'"
+      @change-num-method="changeNumMethod"
       @handle-estimates="handleEstimates"
     />
   </div>
@@ -18,21 +24,26 @@
 <script>
 import SolutionAccordion from '@/components/SolutionAccordion.vue';
 import BisectionMethod from '@/components/BisectionMethod.vue';
+import RegulaFalsiMethod from '../components/RegulaFalsiMethod.vue';
 
 export default {
   name: 'NonlinearView',
   data () {
     return {
-      method: 'BisectionMethod',
+      numMethod: 'bisectionMethod',
       solution: [],
       answer: ''
     }
   },
   components: {
     SolutionAccordion,
-    BisectionMethod
+    BisectionMethod,
+    RegulaFalsiMethod
   },
   methods: {
+    changeNumMethod (numMethod) {
+      this.numMethod = numMethod;
+    },
     handleEstimates (estimates) {
       this.solution = estimates.solution;
       this.answer = estimates.answer;
